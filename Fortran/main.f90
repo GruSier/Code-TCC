@@ -24,7 +24,7 @@ program main
 	GCI_bol=0
 	IF (GCI_bol==0) THEN
 		iexp=-1
-		Nr_i=49
+		Nr_i=48
 		Nr_f=Nr_i
 		Nr_inc=5
 		WRITE(unit=num,fmt='(I2.2)')Nr+1
@@ -128,7 +128,6 @@ SUBROUTINE diffusion(Nr,Nz,Lr,Lz,Ta,Tinf,Erro_p_max,Erro_p_med,iexp,Nr_min,Nz_mi
 		Z(1:Nr,i)=dz*(0.5d0+dble(i-1))
 	enddo
 
-
 	href=(Lr*Lz/(Nr*Nz))**0.5d0
 
 	K_pel=0.293d0;
@@ -216,108 +215,7 @@ SUBROUTINE diffusion(Nr,Nz,Lr,Lz,Ta,Tinf,Erro_p_max,Erro_p_med,iexp,Nr_min,Nz_mi
 		CLOSE(unit=11)
 	END IF
 
-
-	do i=2,Nr-1            !Looping dos elementos internos
-		do j=2,Nz-1
-			c=(i-1)*Nz+j
-			A(c,c-Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-Nz)))*(Rl(c)+Rl(c-Nz))/2.d0*dz/dr !North
-			A(c,c+Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+Nz)))*(Rl(c)+Rl(c+Nz))/2.d0*dz/dr !South
-			A(c,c+1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+1)))*Rl(c)*dr/dz !Eact
-			A(c,c-1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-1)))*Rl(c)*dr/dz !West
-			A(c,c)=-1.d0*(A(c,c-Nz)+A(c,c+Nz)+A(c,c+1)+A(c,c-1)+Rhop*cb*Wl(c)*Rl(c)*dr*dz*NLin)
-			B(c) = -Rhop*cb*Wl(c)*Rl(c)*dr*dz*Ta
-		enddo
-	enddo
-
-	 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	 !!!!!!!!!!!!!!!!!!!!!!!!!!Condições de contorno!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-		!Fronteira Esquerda!
-		do i=2,Nr-1
-			do j=1,1
-				c=(i-1)*Nz+j
-				A(c,c-Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-Nz)))*(Rl(c)+Rl(c-Nz))/2.d0*dz/dr !Nzorth
-				A(c,c+Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+Nz)))*(Rl(c)+Rl(c+Nz))/2.d0*dz/dr !South
-				A(c,c+1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+1)))*Rl(c)*dr/dz !East
-				A(c,c-1)=0.d0                                         !West
-				A(c,c)=-1.d0*(A(c,c-Nz)+A(c,c+Nz)+A(c,c+1)+Rhop*Cb*Wl(c)*Rl(c)*dr*dz*NLin)
-				B(c) = -Rhop*Cb*Wl(c)*Rl(c)*dr*dz*Ta
-			enddo
-		enddo
-
-		!Fronteira Direita!
-		do i=2,Nr-1
-			do j=Nz,Nz
-				c=(i-1)*Nz+j
-				A(c,c-Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-Nz)))*(Rl(c)+Rl(c-Nz))/2.d0*dz/dr !Nzorth
-				A(c,c+Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+Nz)))*(Rl(c)+Rl(c+Nz))/2.d0*dz/dr !South
-				A(c,c+1)=0.d0                                         !East
-				A(c,c-1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-1)))*Rl(c)*dr/dz !West
-				A(c,c)=-1.d0*(A(c,c-Nz)+A(c,c+Nz)+A(c,c-1)+Rhop*Cb*Wl(c)*Rl(c)*dr*dz*NLin)
-				B(c) = -Rhop*Cb*Wl(c)*Rl(c)*dr*dz*Ta
-			enddo
-		enddo
-
-		!Fronteira Inferior!
-		do i=Nr,Nr
-			do j=2,Nz-1
-				c=(i-1)*Nz+j
-				A(c,c-Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-Nz)))*(Rl(c)+Rl(c-Nz))/2.d0*dz/dr !North
-				A(c,c+1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+1)))*Rl(c)*dr/dz !East
-				A(c,c-1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-1)))*Rl(c)*dr/dz !West
-				A(c,c)=-1.d0*(A(c,c-Nz)+A(c,c+1)+A(c,c-1)+Rhop*Cb*Wl(c)*Rl(c)*dr*dz*NLin)
-				B(c) = -Rhop*cb*Wl(c)*Rl(c)*dr*dz*Ta
-			enddo
-		enddo
-
-		!Fronteira Superior!
-		do i=1,1
-			do j=2,Nz-1
-				c=(i-1)*Nz+j
-				A(c,c+Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+Nz)))*(Rl(c)+Rl(c+Nz))/2.d0*dz/dr !South
-				A(c,c+1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+1)))*Rl(c)*dr/dz !Eact
-				A(c,c-1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-1)))*Rl(c)*dr/dz !West
-				A(c,c)=-1.d0*(A(c,c+Nz)+A(c,c+1)+A(c,c-1)+Rhop*Cb*Wl(c)*Rl(c)*dr*dz*NLin+h/(1.d0+h*dr/Kl(c))*(Rl(c)+dr/2.d0)*dz)
-				B(c) = -Rhop*Cb*Wl(c)*Rl(c)*dr*dz*Ta-h/(1.d0+h*dr/Kl(c))*(Rl(c)+dr/2.d0)*dz*Tinf
-			enddo
-		enddo
-
-		!Canto N-W!
-		i=1
-		j=1
-		c=(i-1)*Nz+j
-		A(c,c+Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+Nz)))*(Rl(c)+Rl(c+Nz))/2.d0*dz/dr !South
-		A(c,c+1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+1)))*Rl(c)*dr/dz !East
-		A(c,c)=-1.d0*(A(c,c+Nz)+A(c,c+1)+Rhop*Cb*Wl(c)*Rl(c)*dr*dz*NLin+h/(1.d0+h*dr/Kl(c))*(Rl(c)+dr/2.d0)*dz)
-		B(c) = -Rhop*Cb*Wl(c)*Rl(c)*dr*dz*Ta-h/(1+h*dr/Kl(c))*(Rl(c)+dr/2.d0)*dz*Tinf
-
-		!Canto N-E!
-		i=1
-		j=Nz
-		c=(i-1)*Nz+j
-		A(c,c+Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+Nz)))*(Rl(c)+Rl(c+Nz))/2.d0*dz/dr !South
-		A(c,c-1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-1)))*Rl(c)*dr/dz !West
-		A(c,c)=-1.d0*(A(c,c+Nz)+A(c,c-1)+Rhop*Cb*Wl(c)*Rl(c)*dr*dz*NLin+h/(1.d0+h*dr/Kl(c))*(Rl(c)+dr/2.d0)*dz)
-		B(c) = -Rhop*Cb*Wl(c)*Rl(c)*dr*dz*Ta-h/(1+h*dr/Kl(c))*(Rl(c)+dr/2.d0)*dz*Tinf
-
-		!Canto S-W!
-		i=Nr
-		j=1
-		c=(i-1)*Nz+j
-		A(c,c-Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-Nz)))*(Rl(c)+Rl(c-Nz))/2.d0*dz/dr !Nzorth
-		A(c,c+1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+1)))*Rl(c)*dr/dz !East
-		A(c,c)=-1.d0*(A(c,c-Nz)+A(c,c+1)+Rhop*Cb*Wl(c)*Rl(c)*dr*dz*NLin)
-		B(c) =- Rhop*Cb*Wl(c)*Rl(c)*dr*dz*Ta
-
-		!Canto S-E!
-		i=Nr
-		j=Nz
-		c=(i-1)*Nz+j
-		A(c,c-Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-Nz)))*(Rl(c)+Rl(c-Nz))/2.d0*dz/dr!   Nzorth
-		A(c,c-1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-1)))*Rl(c)*dr/dz                   !West
-		A(c,c)=-1.d0*(A(c,c-Nz)+A(c,c-1)+Rhop*Cb*Wl(c)*Rl(c)*dr*dz*NLin)
-		B(c) = -Rhop*Cb*Wl(c)*Rl(c)*dr*dz*Ta
+	CALL fvm(Nr,Nz,Lr,Lz,Ta,dr,dz,Cb,Rhop,h,Tinf, NLin,A,Kl,Rl,Zl,Wl,B)
 
 		kp=K_pel
 		T_inf=Tinf
@@ -371,7 +269,6 @@ SUBROUTINE diffusion(Nr,Nz,Lr,Lz,Ta,Tinf,Erro_p_max,Erro_p_med,iexp,Nr_min,Nz_mi
 																															,T_a,Erro,Erro_p,Erro_p_max,Erro_p_med)
 			END IF
 		END IF
-		Ta=0.d0
 
 		IF (MMS==1) THEN
 
@@ -455,6 +352,118 @@ SUBROUTINE diffusion(Nr,Nz,Lr,Lz,Ta,Tinf,Erro_p_max,Erro_p_med,iexp,Nr_min,Nz_mi
 
 END SUBROUTINE diffusion
 
+SUBROUTINE fvm(Nr,Nz,Lr,Lz,Ta,dr,dz,Cb,Rhop,h,Tinf, NLin,A,Kl,Rl,Zl,Wl,B)
+	implicit none
+	integer(8)::Nr, Nz
+	integer(8)::i,j, c
+	real(8)::Lr,Lz,Ta,dr,dz,Cb,Rhop,h,Tinf, NLin
+	real(8),dimension(Nr*Nz,Nr*Nz)::A
+	real(8),dimension(Nr*Nz)::Kl,Rl,Zl,Wl, B
+
+		do i=2,Nr-1            !Looping dos elementos internos
+			do j=2,Nz-1
+				c=(i-1)*Nz+j
+				A(c,c-Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-Nz)))*(Rl(c)+Rl(c-Nz))/2.d0*dz/dr !North
+				A(c,c+Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+Nz)))*(Rl(c)+Rl(c+Nz))/2.d0*dz/dr !South
+				A(c,c+1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+1)))*Rl(c)*dr/dz !Eact
+				A(c,c-1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-1)))*Rl(c)*dr/dz !West
+				A(c,c)=-1.d0*(A(c,c-Nz)+A(c,c+Nz)+A(c,c+1)+A(c,c-1)+Rhop*cb*Wl(c)*Rl(c)*dr*dz*NLin)
+				B(c) = -Rhop*cb*Wl(c)*Rl(c)*dr*dz*Ta
+			enddo
+		enddo
+
+		 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		 !!!!!!!!!!!!!!!!!!!!!!!!!!Condições de contorno!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+			!Fronteira Esquerda!
+			do i=2,Nr-1
+				do j=1,1
+					c=(i-1)*Nz+j
+					A(c,c-Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-Nz)))*(Rl(c)+Rl(c-Nz))/2.d0*dz/dr !Nzorth
+					A(c,c+Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+Nz)))*(Rl(c)+Rl(c+Nz))/2.d0*dz/dr !South
+					A(c,c+1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+1)))*Rl(c)*dr/dz !East
+					A(c,c-1)=0.d0                                         !West
+					A(c,c)=-1.d0*(A(c,c-Nz)+A(c,c+Nz)+A(c,c+1)+Rhop*Cb*Wl(c)*Rl(c)*dr*dz*NLin)
+					B(c) = -Rhop*Cb*Wl(c)*Rl(c)*dr*dz*Ta
+				enddo
+			enddo
+
+			!Fronteira Direita!
+			do i=2,Nr-1
+				do j=Nz,Nz
+					c=(i-1)*Nz+j
+					A(c,c-Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-Nz)))*(Rl(c)+Rl(c-Nz))/2.d0*dz/dr !Nzorth
+					A(c,c+Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+Nz)))*(Rl(c)+Rl(c+Nz))/2.d0*dz/dr !South
+					A(c,c+1)=0.d0                                         !East
+					A(c,c-1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-1)))*Rl(c)*dr/dz !West
+					A(c,c)=-1.d0*(A(c,c-Nz)+A(c,c+Nz)+A(c,c-1)+Rhop*Cb*Wl(c)*Rl(c)*dr*dz*NLin)
+					B(c) = -Rhop*Cb*Wl(c)*Rl(c)*dr*dz*Ta
+				enddo
+			enddo
+
+			!Fronteira Inferior!
+			do i=Nr,Nr
+				do j=2,Nz-1
+					c=(i-1)*Nz+j
+					A(c,c-Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-Nz)))*(Rl(c)+Rl(c-Nz))/2.d0*dz/dr !North
+					A(c,c+1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+1)))*Rl(c)*dr/dz !East
+					A(c,c-1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-1)))*Rl(c)*dr/dz !West
+					A(c,c)=-1.d0*(A(c,c-Nz)+A(c,c+1)+A(c,c-1)+Rhop*Cb*Wl(c)*Rl(c)*dr*dz*NLin)
+					B(c) = -Rhop*cb*Wl(c)*Rl(c)*dr*dz*Ta
+				enddo
+			enddo
+
+			!Fronteira Superior!
+			do i=1,1
+				do j=2,Nz-1
+					c=(i-1)*Nz+j
+					A(c,c+Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+Nz)))*(Rl(c)+Rl(c+Nz))/2.d0*dz/dr !South
+					A(c,c+1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+1)))*Rl(c)*dr/dz !Eact
+					A(c,c-1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-1)))*Rl(c)*dr/dz !West
+					A(c,c)=-1.d0*(A(c,c+Nz)+A(c,c+1)+A(c,c-1)+Rhop*Cb*Wl(c)*Rl(c)*dr*dz*NLin+h/(1.d0+h*dr/Kl(c))*(Rl(c)+dr/2.d0)*dz)
+					B(c) = -Rhop*Cb*Wl(c)*Rl(c)*dr*dz*Ta-h/(1.d0+h*dr/Kl(c))*(Rl(c)+dr/2.d0)*dz*Tinf
+				enddo
+			enddo
+
+			!Canto N-W!
+			i=1
+			j=1
+			c=(i-1)*Nz+j
+			A(c,c+Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+Nz)))*(Rl(c)+Rl(c+Nz))/2.d0*dz/dr !South
+			A(c,c+1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+1)))*Rl(c)*dr/dz !East
+			A(c,c)=-1.d0*(A(c,c+Nz)+A(c,c+1)+Rhop*Cb*Wl(c)*Rl(c)*dr*dz*NLin+h/(1.d0+h*dr/Kl(c))*(Rl(c)+dr/2.d0)*dz)
+			B(c) = -Rhop*Cb*Wl(c)*Rl(c)*dr*dz*Ta-h/(1+h*dr/Kl(c))*(Rl(c)+dr/2.d0)*dz*Tinf
+
+			!Canto N-E!
+			i=1
+			j=Nz
+			c=(i-1)*Nz+j
+			A(c,c+Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+Nz)))*(Rl(c)+Rl(c+Nz))/2.d0*dz/dr !South
+			A(c,c-1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-1)))*Rl(c)*dr/dz !West
+			A(c,c)=-1.d0*(A(c,c+Nz)+A(c,c-1)+Rhop*Cb*Wl(c)*Rl(c)*dr*dz*NLin+h/(1.d0+h*dr/Kl(c))*(Rl(c)+dr/2.d0)*dz)
+			B(c) = -Rhop*Cb*Wl(c)*Rl(c)*dr*dz*Ta-h/(1+h*dr/Kl(c))*(Rl(c)+dr/2.d0)*dz*Tinf
+
+			!Canto S-W!
+			i=Nr
+			j=1
+			c=(i-1)*Nz+j
+			A(c,c-Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-Nz)))*(Rl(c)+Rl(c-Nz))/2.d0*dz/dr !Nzorth
+			A(c,c+1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c+1)))*Rl(c)*dr/dz !East
+			A(c,c)=-1.d0*(A(c,c-Nz)+A(c,c+1)+Rhop*Cb*Wl(c)*Rl(c)*dr*dz*NLin)
+			B(c) =- Rhop*Cb*Wl(c)*Rl(c)*dr*dz*Ta
+
+			!Canto S-E!
+			i=Nr
+			j=Nz
+			c=(i-1)*Nz+j
+			A(c,c-Nz)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-Nz)))*(Rl(c)+Rl(c-Nz))/2.d0*dz/dr!   Nzorth
+			A(c,c-1)=(2.d0/(1.d0/Kl(c)+1.d0/Kl(c-1)))*Rl(c)*dr/dz                   !West
+			A(c,c)=-1.d0*(A(c,c-Nz)+A(c,c-1)+Rhop*Cb*Wl(c)*Rl(c)*dr*dz*NLin)
+			B(c) = -Rhop*Cb*Wl(c)*Rl(c)*dr*dz*Ta
+
+END SUBROUTINE fvm
+
 SUBROUTINE analitico(Nr,Nz,Lr,raz_pel,raz_mus,raz_total,Rhop,Cb,h,W_pel,W_mus,W_os,K_pel,K_mus,K_os,Wl,Rl,Tinf,Ta,T&
 																													&,T_a,Erro,Erro_p,Erro_p_max,Erro_p_med)
 	IMPLICIT NONE
@@ -521,8 +530,10 @@ SUBROUTINE sor(vx,A,vb,N)
 	h=1.d0/(dble(N)+1.d0)
 	wopt=2.d0/(1.d0+dsin(pi*h))
 	print *, "wopt:",wopt
+	!print *, wopt
 	wopt=wopt*0.95d0
-	!wopt=1.d0
+	!wopt=1.877d0*1.01
+	!print *, wopt
 	vxnew=0.d0
 	vx=0.d0
 	tol=1.d-3
